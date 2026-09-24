@@ -9,7 +9,7 @@ import { processPullRequest } from "./review-agent";
 import { applyReview } from "./reviews";
 
 // This creates a new instance of the Octokit App class.
-const reviewApp = new App({
+export const reviewApp = new App({
   appId: env.GITHUB_APP_ID,
   privateKey: env.GITHUB_PRIVATE_KEY,
   webhooks: {
@@ -72,24 +72,27 @@ async function handlePullRequestOpened({
 //@ts-ignore
 reviewApp.webhooks.on("pull_request.opened", handlePullRequestOpened);
 
-const port = process.env.PORT || 3000;
-const reviewWebhook = `/api/review`;
+// Run a standalone server locally; on Vercel, api/review.ts handles webhooks.
+if (require.main === module) {
+  const port = process.env.PORT || 3000;
+  const reviewWebhook = `/api/review`;
 
-const reviewMiddleware = createNodeMiddleware(reviewApp.webhooks, {
-  path: "/api/review",
-});
+  const reviewMiddleware = createNodeMiddleware(reviewApp.webhooks, {
+    path: "/api/review",
+  });
 
-const server = http.createServer((req, res) => {
-  if (req.url === reviewWebhook) {
-    reviewMiddleware(req, res);
-  } else {
-    res.statusCode = 404;
-    res.end();
-  }
-});
+  const server = http.createServer((req, res) => {
+    if (req.url === reviewWebhook) {
+      reviewMiddleware(req, res);
+    } else {
+      res.statusCode = 404;
+      res.end();
+    }
+  });
 
-// This creates a Node.js server that listens for incoming HTTP requests (including webhook payloads from GitHub) on the specified port. When the server receives a request, it executes the `middleware` function that you defined earlier. Once the server is running, it logs messages to the console to indicate that it is listening.
-server.listen(port, () => {
-  console.log(`Server is listening for events.`);
-  console.log("Press Ctrl + C to quit.");
-});
+  // This creates a Node.js server that listens for incoming HTTP requests (including webhook payloads from GitHub) on the specified port. When the server receives a request, it executes the `middleware` function that you defined earlier. Once the server is running, it logs messages to the console to indicate that it is listening.
+  server.listen(port, () => {
+    console.log(`Server is listening for events.`);
+    console.log("Press Ctrl + C to quit.");
+  });
+}

@@ -8,6 +8,7 @@ import {
 import { GROQ_MODEL, type GroqChatModel } from "./llms/groq";
 
 const ModelsToTokenLimits: Record<GroqChatModel, number> = {
+  "openai/gpt-oss-20b": 131072,
   "mixtral-8x7b-32768": 32768,
   "gemma-7b-it": 32768,
   "llama3-70b-8192": 8192,
