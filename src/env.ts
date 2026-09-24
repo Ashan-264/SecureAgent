@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 import { createPrivateKey } from "crypto";
-import chalk from "chalk";
+import chalk = require("chalk");
 
 dotenv.config();
 
